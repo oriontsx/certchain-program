@@ -1,6 +1,6 @@
 # CertChain — on-chain academic credential registry
 
-[![CI](https://github.com/oriontsx/certchain-program/actions/workflows/ci.yml/badge.svg)](https://github.com/oriontsx/certchain-program/actions/workflows/ci.yml)
+[![CI](https://github.com/oriontsx/certchain-program/actions/workflows/ci.yml/badge.svg)](https://github.com/oriontsx/certchain-program/actions/workflows/ci.yml) [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](LICENSE) [![Anchor 0.31.1](https://img.shields.io/badge/Anchor-0.31.1-512da8.svg)](https://www.anchor-lang.com/)
 
 **Team TrustMint · Hack4FUTO 5.0**
 
@@ -11,6 +11,16 @@ This repository is the **Sprint 1 backend (blockchain)** deliverable: the Anchor
 - **Program ID:** `4QFVyA8txKQM6rYsiDBJ4QrNurYtouaJq69KCfWXvKgV`
 - **Cluster:** Devnet (`https://api.devnet.solana.com`)
 - **Anchor:** 0.31.1 · **anchor-lang:** 0.31.1
+
+## Contents
+
+- [On-chain credential model](#on-chain-credential-model)
+- [Why a hash-seeded PDA blocks duplicates](#why-a-hash-seeded-pda-blocks-duplicates)
+- [How verification works](#how-verification-works) — issue / query / verify CLI + the static web verifier
+- [Flow](#flow)
+- [Build / deploy / test](#build--deploy--test)
+- [Sprint scope](#sprint-scope)
+- [License](#license)
 
 ---
 
