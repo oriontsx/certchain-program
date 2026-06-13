@@ -109,6 +109,23 @@ RPC defaults to devnet; set `RPC_URL` to target another cluster (e.g. `RPC_URL=h
 
 ---
 
+## Flow
+
+```mermaid
+sequenceDiagram
+    participant I as Institution
+    participant P as CertChain program
+    participant V as Verifier
+    I->>P: issue_credential(hash, student, fields)
+    Note over P: PDA = [b"credential", hash]<br/>init reverts if it already exists
+    P-->>I: CredentialIssued event + tx signature
+    V->>P: fetch PDA(hash)  /  memcmp by student (offset 40)
+    P-->>V: Credential { institution, student, degree, ... }
+    Note over V: exists + fields match → Verified
+```
+
+---
+
 ## Build / deploy / test
 
 Prerequisites: Rust + Cargo, the Solana CLI (Agave), and `cargo-build-sbf` (Solana platform-tools). Node + Yarn for the TS tests.
