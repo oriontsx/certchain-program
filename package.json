@@ -7,6 +7,7 @@
     "test": "ts-mocha -p ./tsconfig.json -t 1000000 tests/**/*.ts",
     "query": "ts-node scripts/query.ts",
     "issue": "ts-node scripts/issue.ts",
+    "hash": "ts-node scripts/hash.ts",
     "lint": "prettier --check \"tests/**/*.ts\"",
     "lint:fix": "prettier --write \"tests/**/*.ts\""
   },

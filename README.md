@@ -94,6 +94,10 @@ The same constant is exported from the program as `pub const STUDENT_FIELD_OFFSE
 `scripts/issue.ts` and `scripts/query.ts` wrap the write + read paths as runnable helpers. They read the IDL from `target/idl/certchain.json`, so run `anchor build` first:
 
 ```bash
+# (optional) precompute a credential's hash offline — no RPC needed
+yarn hash --institution <pubkey> --student <pubkey> --name "Ada Lovelace" \
+          --degree "B.Sc. CS" --department "Computer Science" --year 2026 --grade "First Class"
+
 # issue a credential (the institution wallet signs + pays the rent)
 yarn issue --student <pubkey> --name "Ada Lovelace" --degree "B.Sc. CS" \
            --department "Computer Science" --year 2026 --grade "First Class"
