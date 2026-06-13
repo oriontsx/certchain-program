@@ -67,12 +67,17 @@ function hashCredential(f: {
 }
 
 async function main(): Promise<void> {
-  const studentStr = arg("student");
-  const studentName = arg("name");
-  const degree = arg("degree");
-  const department = arg("department");
-  const yearStr = arg("year");
-  const grade = arg("grade");
+  const fromFile = arg("from");
+  const file: Record<string, any> = fromFile ? JSON.parse(fs.readFileSync(fromFile, "utf8")) : {};
+  const field = (k: string) => arg(k) ?? file[k]; // a CLI flag overrides the file value
+
+  const studentStr = field("student");
+  const studentName = field("name");
+  const degree = field("degree");
+  const department = field("department");
+  const yearRaw = field("year");
+  const yearStr = yearRaw != null ? String(yearRaw) : undefined;
+  const grade = field("grade");
 
   if (!studentStr || !studentName || !degree || !department || !yearStr || !grade) {
     console.log(
@@ -80,6 +85,7 @@ async function main(): Promise<void> {
         "Usage:",
         "  yarn issue --student <pubkey> --name <name> --degree <degree> \\",
         "             --department <dept> --year <year> --grade <grade>",
+        "  yarn issue --from <file.json>   # read {student,name,degree,department,year,grade} from JSON (CLI flags override)",
         "",
         "Wallet: ANCHOR_WALLET or ~/.config/solana/id.json. RPC: RPC_URL (default devnet).",
       ].join("\n")
