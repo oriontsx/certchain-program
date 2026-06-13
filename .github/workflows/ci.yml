@@ -3,7 +3,7 @@ name: CI
 on: [push, pull_request]
 
 env:
-  SOLANA_VERSION: "2.1.0"
+  SOLANA_VERSION: "3.1.12"
   ANCHOR_VERSION: "0.31.1"
 
 jobs:
@@ -29,8 +29,10 @@ jobs:
           restore-keys: |
             ${{ runner.os }}-cargo-anchor${{ env.ANCHOR_VERSION }}-
 
-      # Pin Agave 2.1.0 explicitly: the `stable` channel now resolves to Agave 3.x,
-      # which has a hard io_uring dependency that fails on GitHub Actions runners.
+      # Pin Agave 3.1.12 — the toolchain this program is developed against. Its
+      # build-sbf cargo is recent enough to parse the edition-2024 dependency
+      # manifests in Cargo.lock (crypto-common 0.2.x, etc.) that older Agave
+      # (2.1.x) chokes on. Agave 3.x needs io_uring, which ubuntu-latest provides.
       - name: Install Solana (Agave) CLI v${{ env.SOLANA_VERSION }}
         run: |
           sh -c "$(curl -sSfL https://release.anza.xyz/v${SOLANA_VERSION}/install)"
