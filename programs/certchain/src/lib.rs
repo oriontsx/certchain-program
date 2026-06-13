@@ -38,6 +38,7 @@ pub mod certchain {
     /// Issue a new academic credential. Fails if a credential with the same
     /// `credential_hash` already exists (duplicate-submission guard via the
     /// hash-seeded PDA).
+    #[allow(clippy::too_many_arguments)] // anchor instruction — the credential fields are the args
     pub fn issue_credential(
         ctx: Context<IssueCredential>,
         credential_hash: [u8; 32],
