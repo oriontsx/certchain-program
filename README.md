@@ -1,5 +1,7 @@
 # CertChain — on-chain academic credential registry
 
+[![CI](https://github.com/oriontsx/certchain-program/actions/workflows/ci.yml/badge.svg)](https://github.com/oriontsx/certchain-program/actions/workflows/ci.yml)
+
 **Team TrustMint · Hack4FUTO 5.0**
 
 CertChain is a Solana / Anchor dApp for issuing and verifying academic credentials. An **institution** issues a credential by connecting its Solana wallet, filling a short form (student name, degree, department, year, grade, student wallet), and signing one transaction. The credential's canonical data is hashed (SHA-256) and the hash plus key fields are written **on-chain**; richer metadata lives off-chain (Supabase) in later sprints. A **student** views the credentials tied to their wallet, and a **verifier** confirms a credential by student wallet address or by QR (which resolves to the on-chain record), seeing institution / degree / year / grade, a **Verified** status, and the on-chain transaction link.
