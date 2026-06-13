@@ -112,6 +112,7 @@ yarn hash --institution <pubkey> --student <pubkey> --name "Ada Lovelace" \
 yarn issue --student <pubkey> --name "Ada Lovelace" --degree "B.Sc. CS" \
            --department "Computer Science" --year 2026 --grade "First Class"
 # ...or read the fields from a JSON file (CLI flags still override): yarn issue --from examples/credential.sample.json
+# batch-issue from a JSON array (DRY RUN by default; add --send to issue): yarn batch-issue --from examples/credentials.batch.sample.json --institution <pubkey>
 
 # verify ONE credential by its 32-byte SHA-256 hash (hex) — the QR path
 yarn query verify  <credentialHashHex>

@@ -8,6 +8,7 @@
     "query": "ts-node scripts/query.ts",
     "issue": "ts-node scripts/issue.ts",
     "hash": "ts-node scripts/hash.ts",
+    "batch-issue": "ts-node scripts/batch-issue.ts",
     "lint": "prettier --check \"tests/**/*.ts\"",
     "lint:fix": "prettier --write \"tests/**/*.ts\""
   },
