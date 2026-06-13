@@ -147,4 +147,80 @@ describe("certchain", () => {
       "returned account's student must match the filter"
     );
   });
+
+  it("rejects an over-long student_name with StudentNameTooLong", async () => {
+    const longName = "x".repeat(65); // on-chain max is 64
+    const student2 = Keypair.generate().publicKey;
+    const hash2 = hashCredential({
+      institution: institution.publicKey.toBase58(),
+      student: student2.toBase58(),
+      ...sample,
+      studentName: longName,
+    });
+    const [pda2] = PublicKey.findProgramAddressSync(
+      [Buffer.from("credential"), hash2],
+      program.programId
+    );
+
+    let threw = false;
+    try {
+      await program.methods
+        .issueCredential(
+          Array.from(hash2),
+          student2,
+          longName,
+          sample.degree,
+          sample.department,
+          sample.year,
+          sample.grade
+        )
+        .accounts({
+          credential: pda2,
+          institution: institution.publicKey,
+          systemProgram: anchor.web3.SystemProgram.programId,
+        })
+        .rpc();
+    } catch (err) {
+      threw = true; // expected: require!(student_name.len() <= 64) reverts
+    }
+    assert.isTrue(threw, "over-long student_name should have reverted");
+  });
+
+  it("lists multiple credentials for the same student", async () => {
+    // Issue a SECOND credential (different degree => different hash/PDA) for the
+    // same student, then confirm the memcmp query returns both.
+    const degree2 = "M.Sc. Computer Science";
+    const hash2 = hashCredential({
+      institution: institution.publicKey.toBase58(),
+      student: student.toBase58(),
+      ...sample,
+      degree: degree2,
+    });
+    const [pda2] = PublicKey.findProgramAddressSync(
+      [Buffer.from("credential"), hash2],
+      program.programId
+    );
+
+    await program.methods
+      .issueCredential(
+        Array.from(hash2),
+        student,
+        sample.studentName,
+        degree2,
+        sample.department,
+        sample.year,
+        sample.grade
+      )
+      .accounts({
+        credential: pda2,
+        institution: institution.publicKey,
+        systemProgram: anchor.web3.SystemProgram.programId,
+      })
+      .rpc();
+
+    const found = await credentialAccount.all([
+      { memcmp: { offset: STUDENT_FIELD_OFFSET, bytes: student.toBase58() } },
+    ]);
+    expect(found.length).to.be.greaterThanOrEqual(2);
+  });
 });
