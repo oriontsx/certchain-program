@@ -76,11 +76,15 @@ const credentials = await program.account.credential.all([
 
 The same constant is exported from the program as `pub const STUDENT_FIELD_OFFSET: usize = 40;`.
 
-### Query / verify from the CLI
+### Issue / query / verify from the CLI
 
-`scripts/query.ts` packages both lookups as a runnable helper. It reads the IDL from `target/idl/certchain.json`, so run `anchor build` first:
+`scripts/issue.ts` and `scripts/query.ts` wrap the write + read paths as runnable helpers. They read the IDL from `target/idl/certchain.json`, so run `anchor build` first:
 
 ```bash
+# issue a credential (the institution wallet signs + pays the rent)
+yarn issue --student <pubkey> --name "Ada Lovelace" --degree "B.Sc. CS" \
+           --department "Computer Science" --year 2026 --grade "First Class"
+
 # verify ONE credential by its 32-byte SHA-256 hash (hex) — the QR path
 yarn query verify  <credentialHashHex>
 
