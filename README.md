@@ -6,7 +6,7 @@
 
 CertChain is a Solana / Anchor dApp for issuing and verifying academic credentials. An **institution** issues a credential by connecting its Solana wallet, filling a short form (student name, degree, department, year, grade, student wallet), and signing one transaction. The credential's canonical data is hashed (SHA-256) and the hash plus key fields are written **on-chain**; richer metadata lives off-chain (Supabase) in later sprints. A **student** views the credentials tied to their wallet, and a **verifier** confirms a credential by student wallet address or by QR (which resolves to the on-chain record), seeing institution / degree / year / grade, a **Verified** status, and the on-chain transaction link.
 
-This repository is the **Sprint 1 backend (blockchain)** deliverable: the Anchor program (`certchain`), its on-chain data model, the duplicate-block guard, and an on-chain read/write test.
+This repository is the **Sprint 1 backend (blockchain)** deliverable: the Anchor program (`certchain`), its on-chain data model, the duplicate-block guard, a full test suite + CI, CLI tooling (issue / query / hash), and a static web verifier.
 
 - **Program ID:** `4QFVyA8txKQM6rYsiDBJ4QrNurYtouaJq69KCfWXvKgV`
 - **Cluster:** Devnet (`https://api.devnet.solana.com`)
@@ -172,8 +172,10 @@ This produces the deployable `target/deploy/certchain.so`. (On this hackathon's 
 - Devnet configuration + program keypair / program ID.
 - `certchain` Anchor program: `Credential` account, `issue_credential` instruction, `CredentialIssued` event, custom error enum.
 - Duplicate-block guard via hash-seeded PDA + `init`.
-- On-chain **write** (issue) and **read** (fetch by PDA, list by `student` via memcmp) test, plus the duplicate-revert assertion.
-- `scripts/query.ts` CLI helper — verify a credential by hash, list a student's credentials.
+- On-chain **write** (issue) and **read** (fetch by PDA, list by `student` via memcmp) tests, the duplicate-revert assertion, field-length guard reverts, and a max-length boundary.
+- CLI toolkit (`scripts/`): `hash` (offline hash), `issue` (issue a credential, with `--from <file>`), `query verify|student` (read, with `--json`).
+- Zero-build static **web verifier** (`verifier/index.html`).
+- GitHub Actions **CI** (`anchor build` + `anchor test` on every push) + status badge.
 
 **Sprint 2 — deferred**
 
