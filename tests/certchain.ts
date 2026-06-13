@@ -1,0 +1,150 @@
+import * as anchor from "@coral-xyz/anchor";
+import { Program } from "@coral-xyz/anchor";
+import { PublicKey, Keypair } from "@solana/web3.js";
+import * as crypto from "crypto";
+import { assert, expect } from "chai";
+
+// The generated IDL types may not exist until `anchor build` runs. We type the
+// program loosely so the test compiles either way; switch to
+// `Program<Certchain>` (import from ../target/types/certchain) once built.
+type Certchain = anchor.Idl;
+
+const STUDENT_FIELD_OFFSET = 40; // 8 (discriminator) + 32 (institution)
+
+/** Canonical credential payload → 32-byte SHA-256 hash (the uniqueness key). */
+function hashCredential(fields: {
+  institution: string;
+  student: string;
+  studentName: string;
+  degree: string;
+  department: string;
+  year: number;
+  grade: string;
+}): Buffer {
+  const canonical = [
+    fields.institution,
+    fields.student,
+    fields.studentName,
+    fields.degree,
+    fields.department,
+    String(fields.year),
+    fields.grade,
+  ].join("|");
+  return crypto.createHash("sha256").update(canonical).digest();
+}
+
+describe("certchain", () => {
+  const provider = anchor.AnchorProvider.env();
+  anchor.setProvider(provider);
+
+  const program = anchor.workspace.certchain as Program<Certchain>;
+  // `program.account.credential` is fully typed once `anchor build` generates
+  // target/types/certchain.ts. Until then we read it through this alias so the
+  // test compiles on a box without the Anchor CLI; runtime behavior is identical.
+  const credentialAccount = (program.account as any).credential;
+  const institution = provider.wallet; // the issuing institution = the signer/payer
+
+  // A fresh student wallet for this run so the test is repeatable.
+  const student = Keypair.generate().publicKey;
+
+  const sample = {
+    studentName: "Ada Lovelace",
+    degree: "B.Sc. Computer Science",
+    department: "Computer Science",
+    year: 2026,
+    grade: "First Class",
+  };
+
+  const credentialHash = hashCredential({
+    institution: institution.publicKey.toBase58(),
+    student: student.toBase58(),
+    ...sample,
+  });
+
+  const [credentialPda] = PublicKey.findProgramAddressSync(
+    [Buffer.from("credential"), credentialHash],
+    program.programId
+  );
+
+  it("issues a credential and stores all fields on-chain", async () => {
+    await program.methods
+      .issueCredential(
+        Array.from(credentialHash),
+        student,
+        sample.studentName,
+        sample.degree,
+        sample.department,
+        sample.year,
+        sample.grade
+      )
+      .accounts({
+        credential: credentialPda,
+        institution: institution.publicKey,
+        systemProgram: anchor.web3.SystemProgram.programId,
+      })
+      .rpc();
+
+    const acct = await credentialAccount.fetch(credentialPda);
+
+    assert.strictEqual(acct.studentName, sample.studentName);
+    assert.strictEqual(acct.degree, sample.degree);
+    assert.strictEqual(acct.department, sample.department);
+    assert.strictEqual(acct.year, sample.year);
+    assert.strictEqual(acct.grade, sample.grade);
+    assert.isTrue(
+      acct.institution.equals(institution.publicKey),
+      "institution must equal the signer"
+    );
+    assert.isTrue(acct.student.equals(student), "student must match");
+    assert.deepStrictEqual(
+      Buffer.from(acct.credentialHash),
+      credentialHash,
+      "credential_hash bytes must match"
+    );
+    assert.isAbove(acct.issuedAt.toNumber(), 0, "issued_at must be set");
+  });
+
+  it("blocks a duplicate credential (same hash) from being re-issued", async () => {
+    let threw = false;
+    try {
+      await program.methods
+        .issueCredential(
+          Array.from(credentialHash),
+          student,
+          sample.studentName,
+          sample.degree,
+          sample.department,
+          sample.year,
+          sample.grade
+        )
+        .accounts({
+          credential: credentialPda,
+          institution: institution.publicKey,
+          systemProgram: anchor.web3.SystemProgram.programId,
+        })
+        .rpc();
+    } catch (err) {
+      threw = true; // expected: the hash-seeded PDA already exists → init fails
+    }
+    if (!threw) {
+      assert.fail("Duplicate issuance with the same hash should have reverted");
+    }
+  });
+
+  it("finds all credentials for a student wallet via memcmp (offset 40)", async () => {
+    const found = await credentialAccount.all([
+      {
+        memcmp: {
+          offset: STUDENT_FIELD_OFFSET,
+          bytes: student.toBase58(),
+        },
+      },
+    ]);
+
+    expect(found.length).to.be.greaterThanOrEqual(1);
+    assert.isTrue(
+      found[0].account.student.equals(student),
+      "returned account's student must match the filter"
+    );
+  });
+});
