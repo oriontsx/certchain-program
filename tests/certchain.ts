@@ -317,4 +317,42 @@ describe("certchain", () => {
     ]);
     expect(found.length).to.equal(0);
   });
+
+  it("round-trips u16 year bounds and empty optional fields", async () => {
+    const cases: Array<[string, any]> = [
+      ["max year + empty strings", { studentName: "", degree: "", department: "", year: 65535, grade: "" }],
+      ["zero year", { studentName: "Zed", degree: "PhD", department: "Maths", year: 0, grade: "Pass" }],
+    ];
+    for (const [label, fields] of cases) {
+      const student2 = Keypair.generate().publicKey;
+      const hash2 = hashCredential({
+        institution: institution.publicKey.toBase58(),
+        student: student2.toBase58(),
+        ...fields,
+      });
+      const [pda2] = PublicKey.findProgramAddressSync(
+        [Buffer.from("credential"), hash2],
+        program.programId
+      );
+      await program.methods
+        .issueCredential(
+          Array.from(hash2),
+          student2,
+          fields.studentName,
+          fields.degree,
+          fields.department,
+          fields.year,
+          fields.grade
+        )
+        .accounts({
+          credential: pda2,
+          institution: institution.publicKey,
+          systemProgram: anchor.web3.SystemProgram.programId,
+        })
+        .rpc();
+      const acct = await credentialAccount.fetch(pda2);
+      assert.strictEqual(acct.year, fields.year, `${label}: year`);
+      assert.strictEqual(acct.studentName, fields.studentName, `${label}: name`);
+    }
+  });
 });
