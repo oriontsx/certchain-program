@@ -111,6 +111,8 @@ yarn query student <studentPubkey>
 
 RPC defaults to devnet; set `RPC_URL` to target another cluster (e.g. `RPC_URL=http://127.0.0.1:8899` for a local validator). Add `--json` to either `query` command for machine-readable output (`{ verified, credential }` for `verify`, `{ student, count, credentials }` for `student`).
 
+For a full end-to-end demo (build → issue → verify → list), see **[docs/walkthrough.md](docs/walkthrough.md)**.
+
 ---
 
 ## Flow
