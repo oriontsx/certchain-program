@@ -33,6 +33,19 @@ The `Credential` account (one PDA per credential):
 
 Account size is computed at compile time via `#[derive(InitSpace)]` + `#[max_len(..)]`, allocated as `space = 8 + Credential::INIT_SPACE`.
 
+### Errors
+
+`issue_credential` validates field lengths before writing and reverts with a typed `CertChainError`:
+
+| Error                | Condition                        |
+| -------------------- | -------------------------------- |
+| `StudentNameTooLong` | `student_name` exceeds 64 bytes  |
+| `DegreeTooLong`      | `degree` exceeds 64 bytes        |
+| `DepartmentTooLong`  | `department` exceeds 64 bytes    |
+| `GradeTooLong`       | `grade` exceeds 32 bytes         |
+
+(A duplicate-hash submission reverts at `init` instead — see below.)
+
 ---
 
 ## Why a hash-seeded PDA blocks duplicates
