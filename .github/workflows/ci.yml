@@ -1,0 +1,73 @@
+name: CI
+
+on: [push, pull_request]
+
+env:
+  SOLANA_VERSION: "2.1.0"
+  ANCHOR_VERSION: "0.31.1"
+
+jobs:
+  build-and-test:
+    name: anchor build + test
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Install Rust (stable)
+        uses: dtolnay/rust-toolchain@stable
+
+      - name: Cache Cargo & build artifacts
+        uses: actions/cache@v4
+        with:
+          path: |
+            ~/.cargo/bin/
+            ~/.cargo/registry/index/
+            ~/.cargo/registry/cache/
+            ~/.cargo/git/db/
+            target/
+          key: ${{ runner.os }}-cargo-anchor${{ env.ANCHOR_VERSION }}-${{ hashFiles('**/Cargo.lock') }}
+          restore-keys: |
+            ${{ runner.os }}-cargo-anchor${{ env.ANCHOR_VERSION }}-
+
+      # Pin Agave 2.1.0 explicitly: the `stable` channel now resolves to Agave 3.x,
+      # which has a hard io_uring dependency that fails on GitHub Actions runners.
+      - name: Install Solana (Agave) CLI v${{ env.SOLANA_VERSION }}
+        run: |
+          sh -c "$(curl -sSfL https://release.anza.xyz/v${SOLANA_VERSION}/install)"
+          echo "$HOME/.local/share/solana/install/active_release/bin" >> "$GITHUB_PATH"
+
+      - name: Show Solana version
+        run: solana --version
+
+      - name: Generate a CI keypair (used as the provider wallet)
+        run: solana-keygen new --no-bip39-passphrase --force --silent -o "$HOME/.config/solana/id.json"
+
+      - name: Cache Anchor (AVM) toolchain
+        uses: actions/cache@v4
+        with:
+          path: ~/.avm
+          key: ${{ runner.os }}-avm-${{ env.ANCHOR_VERSION }}
+
+      - name: Install AVM & Anchor v${{ env.ANCHOR_VERSION }}
+        run: |
+          cargo install --git https://github.com/coral-xyz/anchor avm --locked --force
+          avm install ${ANCHOR_VERSION}
+          avm use ${ANCHOR_VERSION}
+
+      - name: Show Anchor version
+        run: anchor --version
+
+      - name: Setup Node
+        uses: actions/setup-node@v4
+        with:
+          node-version: "20"
+          cache: yarn
+
+      - name: Install JS dependencies
+        run: yarn install --frozen-lockfile
+
+      - name: Anchor build
+        run: anchor build
+
+      - name: Anchor test
+        run: anchor test --skip-build
