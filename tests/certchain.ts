@@ -309,4 +309,12 @@ describe("certchain", () => {
     assert.lengthOf(acct.grade, 32);
     assert.isNumber(acct.bump);
   });
+
+  it("returns no credentials for a student that has none", async () => {
+    const stranger = Keypair.generate().publicKey;
+    const found = await credentialAccount.all([
+      { memcmp: { offset: STUDENT_FIELD_OFFSET, bytes: stranger.toBase58() } },
+    ]);
+    expect(found.length).to.equal(0);
+  });
 });
