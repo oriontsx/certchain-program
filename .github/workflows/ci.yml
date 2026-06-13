@@ -71,5 +71,7 @@ jobs:
       - name: Anchor build
         run: anchor build
 
+      # Override the Anchor.toml devnet default: CI must run against a local
+      # validator (anchor spins one up and funds the wallet), not real devnet.
       - name: Anchor test
-        run: anchor test --skip-build
+        run: anchor test --skip-build --provider.cluster localnet
