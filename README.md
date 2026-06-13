@@ -19,6 +19,7 @@ This repository is the **Sprint 1 backend (blockchain)** deliverable: the Anchor
 - [How verification works](#how-verification-works) — issue / query / verify CLI + the static web verifier
 - [Flow](#flow)
 - [Build / deploy / test](#build--deploy--test)
+- [Troubleshooting](#troubleshooting)
 - [Sprint scope](#sprint-scope)
 - [License](#license)
 
@@ -173,6 +174,18 @@ cargo build-sbf
 ```
 
 This produces the deployable `target/deploy/certchain.so`. (On this hackathon's dev box the Anchor CLI / AVM was not installed — the official Anchor NPM binary is x86_64-Linux only — so `cargo build-sbf` is the canonical build check here. `anchor build` / `anchor test` run unchanged on Linux/CI.)
+
+---
+
+## Troubleshooting
+
+**`anchor build` fails: `failed to parse manifest … requires the Cargo feature edition2024`.** The Solana platform-tools cargo bundled with older Agave (2.1.x) is too old to parse edition-2024 dependency manifests (e.g. `crypto-common 0.2`, `constant_time_eq 0.4`). Fix: pin a recent toolchain in `Anchor.toml` — `[toolchain] solana_version = "3.1.12"` — so `anchor build` uses platform-tools v1.52 (cargo ≥ 1.85). This repo's CI already does that.
+
+**`anchor test` fails with `… insufficient funds for spend`.** `anchor test` runs against `[provider] cluster` (which is `devnet` here), so it tries to deploy with an unfunded keypair. For local/CI runs, target a local validator: `anchor test --provider.cluster localnet` (Anchor starts one and funds the wallet).
+
+**The Anchor CLI won't install (Windows).** The official Anchor NPM binary is x86_64-Linux only. On Windows, compile the program directly with `cargo build-sbf` (produces `target/deploy/certchain.so`); `anchor build` / `anchor test` run on Linux / CI.
+
+**CI uses Agave 3.x — `stable`-channel caveat.** The `stable` Solana install channel now resolves to Agave 3.x, which needs `io_uring`; that works on `ubuntu-latest` (kernel 6.x) but can fail on older/sandboxed runners. CI pins `v3.1.12` explicitly to stay reproducible.
 
 ---
 
