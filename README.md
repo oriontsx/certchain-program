@@ -114,7 +114,7 @@ RPC defaults to devnet; set `RPC_URL` to target another cluster (e.g. `RPC_URL=h
 
 For a full end-to-end demo (build → issue → verify → list), see **[docs/walkthrough.md](docs/walkthrough.md)**.
 
-A zero-build **static web verifier** lives in [`verifier/index.html`](verifier/index.html) — serve it (`npx http-server verifier`, or any static host) and paste a credential hash to resolve the on-chain PDA and display the record (read-only, devnet by default).
+A zero-build **static web verifier** lives in [`verifier/index.html`](verifier/index.html) — serve it (`npx http-server verifier`, or any static host) and paste a credential hash to resolve the on-chain PDA and display the record (read-only, devnet by default). Opening it with a `?hash=<hash>` query param (e.g. encoded in a QR) auto-verifies on load.
 
 ---
 

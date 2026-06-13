@@ -186,6 +186,10 @@
 
       $("go").addEventListener("click", verify);
       $("hash").addEventListener("keydown", (e) => { if (e.key === "Enter") verify(); });
+
+      // auto-verify when opened with a ?hash= query param (QR codes / shareable links)
+      const preset = new URLSearchParams(location.search).get("hash");
+      if (preset) { $("hash").value = preset; verify(); }
     </script>
   </body>
 </html>
