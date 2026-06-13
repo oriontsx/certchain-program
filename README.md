@@ -74,6 +74,20 @@ const credentials = await program.account.credential.all([
 
 The same constant is exported from the program as `pub const STUDENT_FIELD_OFFSET: usize = 40;`.
 
+### Query / verify from the CLI
+
+`scripts/query.ts` packages both lookups as a runnable helper. It reads the IDL from `target/idl/certchain.json`, so run `anchor build` first:
+
+```bash
+# verify ONE credential by its 32-byte SHA-256 hash (hex) — the QR path
+yarn query verify  <credentialHashHex>
+
+# list EVERY credential issued to a student wallet (memcmp at offset 40)
+yarn query student <studentPubkey>
+```
+
+RPC defaults to devnet; set `RPC_URL` to target another cluster (e.g. `RPC_URL=http://127.0.0.1:8899` for a local validator).
+
 ---
 
 ## Build / deploy / test
@@ -114,6 +128,7 @@ This produces the deployable `target/deploy/certchain.so`. (On this hackathon's 
 - `certchain` Anchor program: `Credential` account, `issue_credential` instruction, `CredentialIssued` event, custom error enum.
 - Duplicate-block guard via hash-seeded PDA + `init`.
 - On-chain **write** (issue) and **read** (fetch by PDA, list by `student` via memcmp) test, plus the duplicate-revert assertion.
+- `scripts/query.ts` CLI helper — verify a credential by hash, list a student's credentials.
 
 **Sprint 2 — deferred**
 
