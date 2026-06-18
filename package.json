@@ -13,7 +13,7 @@
     "lint:fix": "prettier --write \"tests/**/*.ts\""
   },
   "dependencies": {
-    "@coral-xyz/anchor": "^0.31.1"
+    "@coral-xyz/anchor": "^0.32.1"
   },
   "devDependencies": {
     "@solana/web3.js": "^1.95.0",
