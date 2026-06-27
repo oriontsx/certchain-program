@@ -36,7 +36,7 @@ jobs:
         uses: dtolnay/rust-toolchain@stable
 
       - name: Cache Cargo & build artifacts
-        uses: actions/cache@v4
+        uses: actions/cache@v6
         with:
           path: |
             ~/.cargo/bin/
@@ -64,7 +64,7 @@ jobs:
         run: solana-keygen new --no-bip39-passphrase --force --silent -o "$HOME/.config/solana/id.json"
 
       - name: Cache Anchor (AVM) toolchain
-        uses: actions/cache@v4
+        uses: actions/cache@v6
         with:
           path: ~/.avm
           key: ${{ runner.os }}-avm-${{ env.ANCHOR_VERSION }}
